@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CIO Simulator: Rancang Infrastruktur TI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Public+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f6;--sf:#fff;--ink:#16213a;--mu:#586279;--ln:#cfd6e3;--ac:#2d3fb5;--at:#e6e9fa;--ok:#17805a;--bad:#c2412d;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--sf:#1b2030;--ink:#e8ecf6;--mu:#9aa4ba;--ln:#2e3650;--ac:#8da0ff;--at:#262d4d;--ok:#4cc99a;--bad:#ff8a74;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12151f;--sf:#1b2030;--ink:#e8ecf6;--mu:#9aa4ba;--ln:#2e3650;--ac:#8da0ff;--at:#262d4d;--ok:#4cc99a;--bad:#ff8a74;color-scheme:dark}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Public Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+main{max-width:780px;margin:0 auto;padding:0 16px 96px}
+header{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:18px 0 10px;flex-wrap:wrap}
+header h1{font-size:1.5rem;font-weight:800}
+.btn{font:inherit;font-weight:600;border:1px solid var(--ln);background:var(--sf);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn.p{background:var(--ac);border-color:var(--ac);color:var(--bg)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:16px;margin:14px 0}
+.mu{color:var(--mu);font-size:.92rem}
+label{font-weight:600}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:8px 10px;width:100%}
+textarea{resize:vertical;min-height:56px;margin-top:8px}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>div{flex:1;min-width:160px}
+.slot h3{font-size:1.1rem;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.q{border:1px solid var(--ln);background:none;color:var(--ac);border-radius:50%;width:28px;height:28px;font-weight:700;cursor:pointer}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:10px}
+.opt{text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--ln);border-radius:10px;padding:10px;cursor:pointer}
+.opt b{display:block}.opt small{display:block;color:var(--mu);margin:2px 0 6px}
+.opt[aria-pressed=true]{border-color:var(--ac);background:var(--at)}
+.chip{font-size:.8rem;font-weight:600;color:var(--ac)}
+.bar{height:10px;background:var(--ln);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+.bar.over i{background:var(--bad)}
+.dock{position:sticky;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));margin:0 -16px;display:flex;gap:14px;align-items:center;z-index:5}
+.dock>div{flex:1}
+.big{font:800 3.2rem/1 "Bricolage Grotesque",system-ui,sans-serif}
+.ev{border-left:5px solid var(--ln);padding-left:12px;margin:10px 0}.ev.ok{border-color:var(--ok)}.ev.no{border-color:var(--bad)}
+.sc{display:grid;grid-template-columns:150px 1fr 56px;gap:10px;align-items:center;margin:8px 0}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}td,th{border-bottom:1px solid var(--ln);padding:6px 8px;text-align:left}
+dialog{max-width:640px;width:calc(100% - 24px);max-height:85vh;border:1px solid var(--ln);border-radius:14px;background:var(--sf);color:var(--ink);padding:20px}
+dialog::backdrop{background:rgba(10,14,28,.55)}
+dl{margin:0}dt{font-weight:600;margin-top:12px}dd{margin:2px 0 0;color:var(--mu)}
+dt.hl{background:var(--at);padding:2px 6px;border-radius:4px}
+ol li{margin:6px 0}
+@media(max-width:520px){.sc{grid-template-columns:1fr 56px}.sc .bar{grid-column:1/3;order:3}}
+</style></head><body><main>
+<header><h1>CIO Simulator</h1><div style="display:flex;gap:8px"><button class="btn" id="bh">Cara main</button><button class="btn" id="bg">Istilah</button></div></header>
+<div id="app"></div></main>
+
+<dialog id="dh"><h2>Cara memainkan</h2>
+<ol>
+<li><b>Masukkan kode kelompok</b> (bebas, misalnya "KEL-3") dan pilih ronde. Sistem membagikan salah satu dari 6 kasus. Kode dan ronde yang sama selalu menghasilkan kasus yang sama.</li>
+<li><b>Baca kasus</b>: anggaran, prioritas bisnis, dan kendalanya. Kamu berperan sebagai CIO.</li>
+<li><b>Rakit arsitektur</b>: pilih satu opsi untuk tiap 7 komponen infrastruktur. Biaya tiap opsi terlihat, sedangkan keamanan, skalabilitas, dan kemudahan kelola baru terbuka di hasil. Baca deskripsinya dan pikirkan trade-off-nya. Tombol "?" membuka penjelasan istilah.</li>
+<li><b>Tulis justifikasi</b> singkat (minimal 30 karakter) untuk tiap pilihan. Ini yang membuat arsitektur kelompokmu bisa dipertanggungjawabkan.</li>
+<li><b>Kunci dan uji</b>: sistem memunculkan 2 peristiwa acak khas kasusmu (lonjakan trafik, serangan siber, dll.) dan menghitung skor 0-100.</li>
+<li><b>Debrief</b>: bandingkan arsitektur antarkelompok. Tidak ada satu jawaban benar. Beberapa rancangan berbeda bisa sama-sama bagus dengan trade-off berbeda. Salin ringkasan hasil untuk dikumpulkan sebagai penugasan.</li>
+</ol>
+<p><b>Skor (100):</b> kecocokan dengan strategi bisnis 40, efisiensi anggaran 20, ketahanan terhadap peristiwa 20, kualitas justifikasi 20 (otomatis berdasarkan kelengkapan; dosen dapat menyesuaikan).</p>
+<button class="btn p" data-close>Mengerti</button></dialog>
+
+<dialog id="dg"><h2>Glosarium istilah</h2><dl id="gl"></dl><p><button class="btn p" data-close>Tutup</button></p></dialog>
+
+<script>
+const G=[["infra","Infrastruktur IT","Perangkat fisik dan aplikasi perangkat lunak yang dibutuhkan untuk mengoperasikan perusahaan secara keseluruhan (Laudon & Laudon)."],
+["hardware","Hardware, software, services","Tiga unsur infrastruktur IT: perangkat keras, perangkat lunak, dan layanan (kemampuan manusia dan teknis yang dianggarkan manajemen)."],
+["onprem","On-premise","Server dimiliki dan dikelola sendiri di kantor perusahaan. Kontrol penuh, tetapi investasi awal besar dan kapasitas sulit ditambah."],
+["iaas","IaaS (infrastruktur sewa)","Menyewa server virtual dari penyedia. Kapasitas dapat dinaikkan atau diturunkan sesuai kebutuhan."],
+["mainframe","Mainframe dan client/server","Dua tahap evolusi TI: komputer pusat dengan terminal (1959), lalu jaringan klien yang meminta layanan ke server (1983)."],
+["enterprise","Enterprise computing","Tahap (1992) saat jaringan perusahaan dan internet terhubung, sehingga data dan aplikasi dibagi lintas organisasi."],
+["cloudc","Cloud computing","Sumber daya hardware, software, dan layanan yang disediakan lewat jaringan internet, dapat diakses kapan saja dan dari perangkat apa pun."],
+["public","Public cloud","Layanan pihak ketiga untuk banyak pelanggan. Cocok bagi perusahaan tanpa kekhawatiran privasi besar, ingin pay-as-you-go, atau kekurangan SDM TI."],
+["private","Private cloud","Cloud khusus satu organisasi, di dalam atau luar. Cocok bagi perusahaan dengan syarat privasi dan keamanan ketat."],
+["hybrid","Hybrid cloud","Gabungan private dan public cloud yang tetap terpisah. Cocok jika perusahaan ingin kontrol sebagian dan sebagian lain dilepas ke cloud publik."],
+["paygo","Pay-as-you-go","Membayar sesuai pemakaian, bukan membeli perangkat di muka."],
+["sov","Kedaulatan data","Kewajiban menjaga data tetap berada di bawah kontrol dan hukum organisasi atau negara tertentu."],
+["os","Sistem operasi","Software lapisan pertama saat komputer menyala: mekanisme boot, kernel, command interpreter (shell), dan driver. Contoh: Windows, Unix, Linux. Platform internet seperti Apache atau .NET berjalan di atasnya."],
+["erp","ERP, CRM, SCM, KMS","Enterprise software: ERP mengintegrasikan proses internal, CRM mengelola pelanggan, SCM rantai pasok, KMS pengetahuan. Middleware menghubungkan aplikasi yang berbeda."],
+["data","Manajemen data dan penyimpanan","Layanan menyimpan dan menyediakan data untuk analisis, mis. database SQL, penyimpanan cloud, atau Hadoop untuk data besar."],
+["telko","Jaringan dan telekomunikasi","Layanan data, suara, dan video conference. VPN adalah jalur aman melalui internet publik; leased line adalah jalur privat khusus."],
+["brainware","Brainware","Setiap orang yang terlibat dalam pemanfaatan komputer: system analyst (merencanakan dan merekomendasikan sistem), programmer, administrator, dan operator."],
+["integrator","Konsultan / system integrator","Pihak luar (mis. IBM, Accenture) yang merancang dan memasang sistem agar komponen berbeda bekerja sebagai satu kesatuan."]];
+const S=[
+{k:"hw",t:"Platform hardware",g:"onprem",o:[["Server sendiri (on-premise)","Kontrol penuh, investasi awal besar, kapasitas sulit ditambah.",8,9,3,3],["Server virtual sewa (IaaS)","Bayar sesuai pakai, kapasitas mudah naik-turun.",4,5,9,7],["Server minimal + cadangan sewa","Inti di kantor, cadangan di penyedia luar.",6,7,7,5]]},
+{k:"cloud",t:"Model cloud",g:"cloudc",o:[["Public cloud","Dikelola pihak ketiga, pay-as-you-go, kontrol data terbatas.",3,4,9,8],["Private cloud","Khusus satu organisasi, privasi tinggi, biaya dan keahlian besar.",8,9,6,3],["Hybrid cloud","Data sensitif di privat, beban lonjakan di publik.",6,7,8,5]]},
+{k:"os",t:"Sistem operasi dan platform",g:"os",o:[["Windows Server","Mudah dikelola admin, lisensi berbayar.",6,6,5,8],["Linux (open source)","Lisensi murah, butuh admin ahli, fleksibel.",3,8,7,4],["Platform terkelola","OS dikelola penyedia, kustomisasi terbatas.",5,5,8,9]]},
+{k:"sw",t:"Enterprise software",g:"erp",o:[["Paket ERP terintegrasi","Semua proses terpadu, mahal dan implementasi lama.",9,7,6,3],["Modul terpisah (CRM + SCM)","Dipasang bertahap sesuai kebutuhan.",5,6,6,6],["Aplikasi perkantoran + SaaS ringan","Cepat dipakai, integrasi terbatas.",2,4,4,9]]},
+{k:"data",t:"Manajemen data dan penyimpanan",g:"data",o:[["Database terpusat on-site","Data di server sendiri, terkontrol, sulit diperbesar.",7,9,4,4],["Database cloud terkelola","Otomatis tumbuh dan dicadangkan penyedia.",4,5,9,8],["Data warehouse + replikasi","Analisis dan cadangan lengkap, rumit dikelola.",8,7,8,3]]},
+{k:"net",t:"Jaringan dan telekomunikasi",g:"telko",o:[["Jaringan privat (leased line)","Jalur khusus, aman dan stabil, mahal.",8,9,5,5],["VPN lewat internet","Terenkripsi, biaya sedang.",4,7,7,6],["Internet publik saja","Murah dan mudah, perlindungan minim.",1,2,6,9]]},
+{k:"brain",t:"Brainware dan konsultan",g:"brainware",o:[["Tim TI internal lengkap","Analyst, programmer, admin, operator sendiri.",9,8,5,4],["Tim kecil + system integrator","Inti internal, pekerjaan berat oleh konsultan.",5,7,7,7],["Outsourcing penuh","Seluruh TI dikelola vendor.",3,4,6,9]]}];
+const D=[["sec","Keamanan dan kontrol"],["flex","Skalabilitas dan ketahanan"],["ease","Kemudahan kelola"]];
+const C=[
+{n:"Startup e-commerce",e:"🛒",d:"Modal terbatas, trafik naik-turun saat promo, ingin tumbuh cepat. Tim TI hanya 3 orang.",b:32,w:[2,5,3],ev:[["Flash sale menembus 20x trafik normal.","flex",6.5],["Data pelanggan bocor dan diberitakan media.","sec",5]]},
+{n:"Bank daerah",e:"🏦",d:"Regulator mewajibkan data nasabah terkontrol dan tetap di dalam negeri. Reputasi bergantung pada keamanan.",b:46,w:[6,2,2],ev:[["Audit regulator memeriksa kontrol data nasabah.","sec",7],["Mobile banking ramai mendadak saat tanggal gajian.","flex",5]]},
+{n:"Rumah sakit",e:"🏥",d:"Data pasien sangat sensitif dan sistem tidak boleh mati. Anggaran menengah, tim TI kecil.",b:42,w:[4,3,3],ev:[["Server utama mati tengah malam.","flex",6],["Rekam medis pasien terancam peretasan.","sec",6.5]]},
+{n:"Pabrik manufaktur",e:"🏭",d:"Banyak cabang dan pemasok yang harus terintegrasi lewat rantai pasok (SCM).",b:45,w:[3,3,4],ev:[["Pemasok baru harus terhubung ke sistem bulan ini.","flex",5.5],["Tim TI cabang kewalahan memelihara sistem.","ease",5.5]]},
+{n:"Universitas",e:"🎓",d:"Pengguna puluhan ribu, anggaran publik terbatas, beban memuncak saat KRS dan ujian.",b:36,w:[3,5,2],ev:[["KRS dibuka serentak oleh 30.000 mahasiswa.","flex",7],["Nilai mahasiswa diretas dan diubah.","sec",5.5]]},
+{n:"UMKM kuliner multi-cabang",e:"🍜",d:"Tiga cabang, tanpa staf TI khusus, butuh solusi sederhana dan murah.",b:24,w:[2,2,6],ev:[["Satu-satunya admin TI mengundurkan diri.","ease",6.5],["Cabang baru dibuka bulan depan.","flex",5]]}];
+const $=s=>document.querySelector(s),A=$("#app");
+let st={code:"",ron:1,ci:0,pick:{},just:{}};
+function hash(s){let h=5381;for(const c of s)h=((h<<5)+h+c.charCodeAt(0))>>>0;return h}
+function calc(){const c=C[st.ci],ch=S.map((s,i)=>s.o[st.pick[i]]);
+ const cost=ch.reduce((a,o)=>a+o[2],0),av=[0,1,2].map(j=>ch.reduce((a,o)=>a+o[3+j],0)/7);
+ const fit=Math.round(av.reduce((a,v,j)=>a+v*c.w[j],0)/c.w.reduce((a,b)=>a+b)/10*40);
+ const cs=Math.round(cost<=c.b?20:20*Math.max(0,1-(cost-c.b)/(.4*c.b)));
+ const evs=c.ev.map(([t,d,th])=>{const v=av[D.findIndex(x=>x[0]==d)],r=Math.min(1,v/th);return{t,d,th,v,ok:v>=th,s:Math.round(10*r*r)}});
+ const nj=S.filter((s,i)=>(st.just[i]||"").trim().length>=30).length,js=Math.round(20*nj/7);
+ return{ch,cost,av,fit,cs,evs,es:evs.reduce((a,e)=>a+e.s,0),nj,js,tot:fit+cs+evs.reduce((a,e)=>a+e.s,0)+js}}
+function start(){A.innerHTML=`<div class="card"><h2>Rancang infrastruktur TI untuk kasusmu</h2><p class="mu">Kamu menjadi CIO. Sistem membagikan satu kasus bisnis, lalu kelompokmu merakit arsitektur dan mempertanggungjawabkannya.</p>
+<div class="row"><div><label for="kc">Kode kelompok</label><input id="kc" placeholder="mis. KEL-3" value="${st.code}"></div>
+<div><label for="kr">Ronde</label><select id="kr">${[1,2,3].map(n=>`<option ${n==st.ron?"selected":""}>${n}</option>`).join("")}</select></div></div>
+<p><button class="btn p" id="go">Bagikan kasus</button> <button class="btn" onclick="$('#dh').showModal()">Lihat cara main</button></p></div>`;
+ $("#go").onclick=()=>{const v=$("#kc").value.trim();if(!v){$("#kc").focus();$("#kc").placeholder="Isi kode kelompok dulu";return}
+  st={code:v,ron:+$("#kr").value,ci:(hash(v.toLowerCase())+ +$("#kr").value-1)%6,pick:{},just:{}};build()}}
+function build(){const c=C[st.ci];
+ A.innerHTML=`<div class="card"><h2>${c.e} ${c.n}</h2><p>${c.d}</p><p class="mu">Kelompok ${st.code}, ronde ${st.ron}. Anggaran: <b>${c.b}</b> poin biaya.<br>Prioritas: ${D.map((x,j)=>x[1]+" "+"●".repeat(Math.ceil(c.w[j]/2))).join(", ")}.</p></div>`+
+ S.map((s,i)=>`<section class="card slot"><h3>${i+1}. ${s.t} <button class="q" aria-label="Penjelasan istilah ${s.t}" data-g="${s.g}">?</button></h3>
+ <div class="opts">${s.o.map((o,j)=>`<button class="opt" aria-pressed="${st.pick[i]===j}" data-i="${i}" data-j="${j}"><b>${o[0]}</b><small>${o[1]}</small><span class="chip">Biaya ${o[2]}</span></button>`).join("")}</div>
+ <textarea data-t="${i}" placeholder="Mengapa pilihan ini cocok untuk kasus ini? (min. 30 karakter)">${st.just[i]||""}</textarea></section>`).join("")+
+ `<div class="dock"><div><div class="mu" id="bm"></div><div class="bar" id="bb"><i></i></div></div><button class="btn p" id="lk">Kunci dan uji</button></div>`;
+ meter()}
+function meter(){const c=C[st.ci],n=Object.keys(st.pick).length,cost=S.reduce((a,s,i)=>a+(st.pick[i]!=null?s.o[st.pick[i]][2]:0),0);
+ $("#bm").textContent=`Biaya ${cost} dari ${c.b} · ${n}/7 komponen dipilih`+(cost>c.b?" · melebihi anggaran":"");
+ const b=$("#bb");b.className="bar"+(cost>c.b?" over":"");b.firstChild.style.width=Math.min(100,cost/c.b*100)+"%";$("#lk").disabled=n<7;
+ $("#lk").onclick=result}
+function result(){const c=C[st.ci],r=calc(),g=r.tot>=85?"Sangat selaras":r.tot>=70?"Selaras":r.tot>=55?"Cukup selaras":"Perlu ditinjau ulang";
+ const row=(l,v,m)=>`<div class="sc"><span>${l}</span><div class="bar"><i style="width:${v/m*100}%"></i></div><b>${v}/${m}</b></div>`;
+ A.innerHTML=`<div class="card"><p class="mu">${c.e} ${c.n} · Kelompok ${st.code}, ronde ${st.ron}</p><div class="big">${r.tot}<span class="mu" style="font-size:1.2rem">/100</span></div><h2>${g}</h2>
+ ${row("Kecocokan strategi",r.fit,40)}${row("Efisiensi anggaran ("+r.cost+"/"+c.b+")",r.cs,20)}${row("Ketahanan peristiwa",r.es,20)}${row("Justifikasi ("+r.nj+"/7)",r.js,20)}</div>
+ <div class="card"><h3>Peristiwa acak</h3>${r.evs.map(e=>`<div class="ev ${e.ok?"ok":"no"}"><b>${e.ok?"Lolos":"Terganggu"}:</b> ${e.t}<div class="mu">Ujian: ${D.find(x=>x[0]==e.d)[1]}. Arsitekturmu ${e.v.toFixed(1)}, dibutuhkan ${e.th}. Skor ${e.s}/10.</div></div>`).join("")}</div>
+ <div class="card"><h3>Profil arsitektur</h3><p class="mu">Rata-rata atribut tersembunyi dari pilihanmu (0-10).</p>${D.map((d,j)=>`<div class="sc"><span>${d[1]}</span><div class="bar"><i style="width:${r.av[j]*10}%"></i></div><b>${r.av[j].toFixed(1)}</b></div>`).join("")}
+ <div class="tw"><table><tr><th>Komponen</th><th>Pilihan</th><th>Biaya</th><th>Aman</th><th>Skala</th><th>Mudah</th></tr>${S.map((s,i)=>{const o=r.ch[i];return`<tr><td>${s.t}</td><td>${o[0]}</td><td>${o[2]}</td><td>${o[3]}</td><td>${o[4]}</td><td>${o[5]}</td></tr>`}).join("")}</table></div></div>
+ <div class="card"><h3>Ringkasan untuk dikumpulkan</h3><textarea id="sm" readonly rows="10"></textarea><p><button class="btn p" id="cp">Salin ringkasan</button> <button class="btn" id="ed">Ubah arsitektur</button> <button class="btn" id="rs">Mulai ulang</button></p></div>`;
+ $("#sm").value=`CIO SIMULATOR\nKelompok: ${st.code} (ronde ${st.ron})\nKasus: ${c.n}\nSkor: ${r.tot}/100 (${g})\n - Strategi ${r.fit}/40, Anggaran ${r.cs}/20 (biaya ${r.cost}/${c.b}), Peristiwa ${r.es}/20, Justifikasi ${r.js}/20\n\nARSITEKTUR & JUSTIFIKASI\n`+S.map((s,i)=>`${i+1}. ${s.t}: ${r.ch[i][0]}\n   Alasan: ${(st.just[i]||"-").trim()}`).join("\n")+`\n\nPERISTIWA\n`+r.evs.map(e=>`- ${e.ok?"Lolos":"Terganggu"}: ${e.t}`).join("\n");
+ $("#cp").onclick=()=>{const t=$("#sm");t.select();try{navigator.clipboard.writeText(t.value).catch(()=>document.execCommand("copy"))}catch(e){document.execCommand("copy")}$("#cp").textContent="Tersalin"};
+ $("#ed").onclick=build;$("#rs").onclick=start;scrollTo(0,0)}
+function glos(k){$("#dg").showModal();document.querySelectorAll("dt").forEach(t=>t.classList.toggle("hl",t.id=="g-"+k));if(k){const e=$("#g-"+k);e&&e.scrollIntoView({block:"center"})}}
+$("#gl").innerHTML=G.map(g=>`<dt id="g-${g[0]}">${g[1]}</dt><dd>${g[2]}</dd>`).join("");
+$("#bh").onclick=()=>$("#dh").showModal();$("#bg").onclick=()=>glos();
+document.addEventListener("click",e=>{const t=e.target,o=t.closest(".opt"),q=t.closest(".q");
+ if(t.matches("[data-close]"))t.closest("dialog").close();else if(t.matches("dialog"))t.close();
+ if(q)glos(q.dataset.g);
+ if(o){const i=+o.dataset.i;st.pick[i]=+o.dataset.j;o.parentNode.querySelectorAll(".opt").forEach(b=>b.setAttribute("aria-pressed",b===o));meter()}});
+document.addEventListener("input",e=>{if(e.target.dataset.t!=null)st.just[e.target.dataset.t]=e.target.value});
+start();$("#dh").showModal();
+</script></body></html>
